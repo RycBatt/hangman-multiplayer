@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Meu Primeiro Jogo Multiplayer</title>
+  <style>
+    #screen
+    {
+    border: 1px solid #CCC;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="screen" width="500" height="500"></canvas>
+	<input type="text" id="guessLetter" name="guessInput" placeholder="Lança a letra" />
+  <button id="guessbtn">Lança o click</button>
+  
+  <script type="module">
+    import createKeyboardListener from './keyboard-listener.js'
+    import createGame from './creategame.js'
+    import renderScreen from './renderscreen.js'
+    import loadImages from './loadImages.js'
+
+    const game = createGame()
+    const keyboardListener = createKeyboardListener(document)
+    keyboardListener.subscribe(game.sendGuess)
+    const screen = document.getElementById("screen")
+    const Images = new loadImages(
+    [{
+    name: 0,
+    url: "cabeca1.png"
+    },{
+    name: 1,
+    url: "corpo.png"
+    },{
+    name: 2,
+    url: "bracoD.png"
+    },{
+    name: 3,
+    url: "bracoE.png"
+    },{
+    name: 4,
+    url: "pernaD.png"
+    },{
+    name: 5,
+    url: "pernaE.png"
+    }]);
+
+    
+    renderScreen(screen, game, Images, requestAnimationFrame)
+  
+  </script>
+</body>
+</html>
