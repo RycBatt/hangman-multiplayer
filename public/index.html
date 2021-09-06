@@ -14,10 +14,11 @@
   <canvas id="screen" width="500" height="500"></canvas>
 	<input type="text" id="guessLetter" name="guessInput" placeholder="Lança a letra" />
   <button id="guessbtn">Lança o click</button>
-  
+  <script src="/socket.io/socket.io.js"></script>
   <script type="module">
+  
     import createKeyboardListener from './keyboard-listener.js'
-    import createGame from './creategame.js'
+    import createGame from './game.js'
     import renderScreen from './renderscreen.js'
     import loadImages from './loadImages.js'
 
@@ -44,11 +45,23 @@
     },{
     name: 5,
     url: "pernaE.png"
-    }]);
+    }]);    
 
-    
     renderScreen(screen, game, Images, requestAnimationFrame)
-  
+
+    const socket = io()
+
+    socket.on('connect', () =>{
+      const playerId = socket.id
+      console.log(`Player connected on Client with id ${playerId}`)
+    })
+    
+    socket.on('setup', (state) =>{
+      console.log('Received server configurations: ')
+      console.log(state)
+      game.state = state
+    })
+    
   </script>
 </body>
 </html>
