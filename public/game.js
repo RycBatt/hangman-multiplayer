@@ -1,22 +1,68 @@
-export default function createGame() {
+export default function createGame(word) {
+  const pointsRef  = 10
   const state = {
-     correctAnswerList : [],
-     wrongAnswerList : [],
-     player : [],
-     guesses : [],
-     stopped : false,
-     guessResponse : {},
-     wordLenght : 0,
+     players : {},
+     stopped : false
   }
 
-  function roundInit(wordLenght,){
-    state.wordLensght = wordLenght
+  function end(endCommand){
+    setState (endCommand)
+  }
+
+  function setState(newState){
+    console.log('Received new game state: ')
+    Object.assign(state, newState)
+  }
+
+  function getOpponentId(playerId){
+    if (state.player1 === playerId){
+      return state.player2
+    }else if (state.player2 === playerId){
+      return state.player1
+    }else{
+    return 'error'
+    }
+  }
+
+
+  function playerLose(playerId){
+    const winnerId = getOpponentId(playerId)
+    console.log(winnerId)
+    var command = {winner : winnerId,
+    loser: playerId}
+
+    end(command)
+
+  }
+
+  function setPlayerState(playerId, newState){
+    console.log('Received new player state: ')
+    const playerState = state.players[playerId]
+    Object.assign(playerState, newState)
+  }
+
+  function addPlayer(command){
+    const playerId = command.playerId
+    const playerTentatives = 'tentatives' in command ? command.tentatives : 7
+    const playerPoints = 'points' in command ? command.points : 100
+    const playerIsHost = 'host' in command ? command.host : false
+
+    state.players[playerId] = {
+      tentatives : playerTentatives,
+      points : playerPoints,
+      host : playerIsHost,
+      correctAnswerList: [],
+      wrongAnswerList: [],
+      wordLength: word.length
     }
 
-  function addPlayer(playerId){
-    var player = {id: playerId, tentatives: 7}
-    state.player.push(player)
-    console.log(`Added new player with id ${state.player.last().id} to the game with ${state.player.last().tentatives} tentatives`)
+    if (playerIsHost){
+      setState({player1 : playerId})
+    }else{
+      setState({player2 : playerId})
+    }
+
+    console.log(`Added new player as ${playerIsHost ? 'host' : 'guest'} with id ${playerId} with ${state.players[playerId].points} points and ${state.players[playerId].tentatives} tentatives`)
   }
   
   function sendGuess(){
@@ -30,60 +76,64 @@ export default function createGame() {
     playerGuess(command)
   }
 
-  function playerGuess(word, command) {
-    var guessResponse
+  function playerGuess(command) {
+    const playerId = command.playerId
+    var playerGuess = command.guess
+    word = word.toString().toUpperCase()
+    playerGuess = playerGuess.toString() 
+    playerGuess = playerGuess.charAt(0).toUpperCase()
 
-    command.guess = command.guess[0]
-    console.log(`Player with id ${command.playerId} is guessing the letter ${command.guess}`)
-    state.guesses.push(command.guess);
+    //get current values of player
+    const currPlayerPoints = state.players[playerId].points
+    const currPlayerTentatives = state.players[playerId].tentatives
+    const currPlayerCorrectList = state.players[playerId].correctAnswerList
+    const currPlayerWrongList = state.players[playerId].wrongAnswerList
+    // auxiliar variable to set final state of the player
+    var newPlayerState  = {}
 
-    if (state.stopped) 
-    {
-      console.log('parado')
-    }
-    if (word.indexOf(command.guess) < 0) {
+    console.log(`Player with id ${playerId} is guessing the letter ${playerGuess}`)
+
+    if (word.indexOf(playerGuess) < 0) {
       // Incorrect guess, increase our mistakes by one
-      state.player[command.playerId].tentatives--
-      guessResponse = 
-          {
-            value:'wrong',
-            letter: command.guess
-          }
-      state.wrongAnswerList.push(guessResponse)
-      // Check if its Game Over
-      if (state.player[command.playerId].tentatives <= 0) {
-        state.stopped = true;
+      var newPlayerWrongAnswerList = currPlayerWrongList
+      newPlayerWrongAnswerList.push(playerGuess)
+      newPlayerState = {wrongAnswerList : newPlayerWrongAnswerList,
+      tentatives : currPlayerTentatives - 1}
+      // Check if its Game Over for that player
+      if (currPlayerTentatives <= 0) {
+        return playerLose(playerId)
       }
     }
-    else if (word.indexOf(command.guess) >= 0) {
-          guessResponse = 
-          {
-            value:'correct',
-            letter: command.guess,
-            positions: returnIndexes(word, command.guess)
-          }
-          console.log(guessResponse)
-          state.correctAnswerList.push(guessResponse)
-  }
+    else if (word.indexOf(playerGuess) >= 0) {
+      // correct guess
+      var newPlayerCorrectAnswerList = currPlayerCorrectList
+      newPlayerCorrectAnswerList.push([playerGuess,returnIndexes(word, playerGuess)])
+      
+      newPlayerState = {correctAnswerList : newPlayerCorrectAnswerList,
+        points : currPlayerPoints + pointsRef
+      }
+    }
+    setPlayerState(playerId, newPlayerState)
+    }
+
   function returnIndexes(word, letter){
+    word = word.toString().toUpperCase()
+    letter = letter.toString() 
+    letter = letter.charAt(0).toUpperCase()
     var indices = [];
-    for(var i=0; i<state.wordLenght;i++) {
+    for(var i=0; i<word.length;i++) {
         if (word[i] === letter) indices.push(i);
-    }       
+    }
   return indices
   }
-}
+
 return {
     playerGuess,
-    sendGuess,
     addPlayer,
-    roundInit,
-    state
+    state,
+    setState,
+    setPlayerState,
+    playerLose,
+    end
   }
 }
-
-if (!Array.prototype.last){
-  Array.prototype.last = function(){
-      return this[this.length - 1];
-  };
-};

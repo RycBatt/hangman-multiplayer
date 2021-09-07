@@ -22,9 +22,9 @@
     import renderScreen from './renderscreen.js'
     import loadImages from './loadImages.js'
 
+
     const game = createGame()
     const keyboardListener = createKeyboardListener(document)
-    keyboardListener.subscribe(game.sendGuess)
     const screen = document.getElementById("screen")
     const Images = new loadImages(
     [{
@@ -47,20 +47,27 @@
     url: "pernaE.png"
     }]);    
 
-    renderScreen(screen, game, Images, requestAnimationFrame)
+    console.log(game)
+    
+    renderScreen(screen, game.state.players[playerId], Images, requestAnimationFrame)
 
     const socket = io()
 
     socket.on('connect', () =>{
       const playerId = socket.id
       console.log(`Player connected on Client with id ${playerId}`)
+
+    })
+
+    socket.on('setup', (state) =>{
+
+        console.log('>Receiving setup event from server')
+        game.state.players[playerId] = state
+        console.log(state)
+
     })
     
-    socket.on('setup', (state) =>{
-      console.log('Received server configurations: ')
-      console.log(state)
-      game.state = state
-    })
+
     
   </script>
 </body>

@@ -5,32 +5,37 @@ import { Server } from "socket.io";
 
 const app = express()
 const server = http.createServer(app)
-const sockets = new Server(server, {})
+const sockets = new Server(server)
 
 app.use(express.static('public'))
 
-const game = createGame()
-const player1id = '1'
-const player2id = '2'
 const word = 'LOLLIPOP'
-const wordLenght = word.length
-game.roundInit(wordLenght)
-game.addPlayer(player1id)
-game.addPlayer(player2id)
-const command = {
-  playerId: player1id,
-  guess: 'O'
-}
-game.playerGuess(word, command)
+
+const game = createGame(word)
+game.addPlayer({ playerId: '4Ffoo9KnBczy8ibyAAABç', host: false} )
+game.addPlayer({ playerId: 'SERTFYGHTRC4VGHBVYCT', host: true} )
+
+game.setState({wordLength: word.length})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'O'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'l'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
+game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
+
 
 console.log(game.state)
 
-
-
-sockets.on('connection', (socket) => {
+sockets.on('connection', (socket)=>{
   const playerId = socket.id
-  console.log(`>Player connected on Server with id: ${playerId}`)
-  socket.emit('setup',game.state)
+  console.log(`>>> Player connected on Server with id ${playerId}`)
+  game.addPlayer({playerId : playerId, host: true})
+  console.log(game.state.players[playerId])
+  socket.emit('setup', game.state.players[playerId])
 })
 
 server.listen(3000, () =>{
