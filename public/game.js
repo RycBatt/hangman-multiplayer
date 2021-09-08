@@ -75,7 +75,7 @@ export default function createGame(word) {
 
   function addPlayer(command){
     const playerId = command.playerId
-    const playerTentatives = 'tentatives' in command ? command.tentatives : 7
+    const playerTentatives = 'tentatives' in command ? command.tentatives : 6
     const playerPoints = 'points' in command ? command.points : 100
     const playerIsHost = 'host' in command ? command.host : false
 

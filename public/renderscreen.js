@@ -58,10 +58,14 @@ export default function renderScreen(screen, game, Images, playerId){
           }
       }
     for(const wrongAnswer in wrongAnswerList){
-      context.drawImage(Images.get(wrongAnswer), bodyPartsPosition[wrongAnswer].position[0], bodyPartsPosition[wrongAnswer].position[1], bodyPartsPosition[wrongAnswer].position[2], bodyPartsPosition[wrongAnswer].position[3])
+      if(tentatives > 0){
+        context.drawImage(Images.get(wrongAnswer), bodyPartsPosition[wrongAnswer].position[0], bodyPartsPosition[wrongAnswer].position[1], bodyPartsPosition[wrongAnswer].position[2], bodyPartsPosition[wrongAnswer].position[3])
+      }else{
+        console.log('cant log more')
+      }
      }
     console.log(playerState.ended)
-    if(game.state.end){
+    if(playerState.ended){
       //checa se o player é o vencedor
       if(playerState.winner ===playerId){
         console.log('ganhou')
