@@ -1,8 +1,15 @@
-export default function createKeyboardListener(document) {
+export default function createKeyboardListener(document, socket) {
+
+
   document.getElementById("guessbtn").addEventListener('click', handleSubmit)
   const state = {
-    observers:  []
+    observers:  [],
+    playerId: null
   }
+  function registerPlayerId(playerId){
+    state.playerId = playerId
+  }
+
   function subscribe(observerFunction){
     state.observers.push(observerFunction)
   }
@@ -20,12 +27,14 @@ export default function createKeyboardListener(document) {
     guess = guess.charAt(0).toUpperCase()
     const command = 
     {
-      playerId: 'player1',
+      playerId: state.playerId,
       guess: guess
     }
-    notifyAll(command)
+    socket.emit('player-guess', command)
+    
   }
   return {
-    subscribe
+    subscribe,
+    registerPlayerId
   }
 }

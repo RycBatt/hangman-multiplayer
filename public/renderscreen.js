@@ -1,6 +1,13 @@
 
-export default function renderScreen(screen, playerState, Images, requestAnimationFrame){
+export default function renderScreen(screen, game, Images, playerId){
     var context = screen.getContext("2d")
+    const playerState = game.state
+    const wordLength = 'wordLength' in playerState ? playerState.wordLength : 0
+    const correctAnswerList =playerState.correctAnswerList
+    const wrongAnswerList =playerState.wrongAnswerList
+    const tentatives =playerState.tentatives
+
+
     const bodyPartsPosition = [
       {
       position: [200, 200, 50, 50]
@@ -27,7 +34,7 @@ export default function renderScreen(screen, playerState, Images, requestAnimati
       'posy' : 100,
       }
     const letterSize = 30
-    const lettersPositions = Array.from({length: playerState.wordLenght}, (v,x) => [x*letterSize + letterBlock.posx, letterBlock.posy])
+    const lettersPositions = Array.from({length: wordLength}, (v,x) => [x*letterSize + letterBlock.posx, letterBlock.posy])
 
     let positionDict = {}
     positionDict = lettersPositions.map(x => {
@@ -41,8 +48,8 @@ export default function renderScreen(screen, playerState, Images, requestAnimati
       context.fillStyle = 'black'
       context.fillRect(letter[0], letter[1], letterSize-5, 1)
       }
-    for(const responses in playerState.correctAnswerList){
-      const correctAnswer = playerState.correctAnswerList[responses]
+    for(const responses in correctAnswerList){
+      const correctAnswer = correctAnswerList[responses]
         for (const correctGuess in correctAnswer.positions){
           const letter = correctAnswer.letter
           const position = correctAnswer.positions[correctGuess]
@@ -50,13 +57,23 @@ export default function renderScreen(screen, playerState, Images, requestAnimati
           context.fillText(letter, positionDict[position].posx, positionDict[position].posy)
           }
       }
-    for(const wrongAnswer in playerState.wrongAnswerList){
+    for(const wrongAnswer in wrongAnswerList){
       context.drawImage(Images.get(wrongAnswer), bodyPartsPosition[wrongAnswer].position[0], bodyPartsPosition[wrongAnswer].position[1], bodyPartsPosition[wrongAnswer].position[2], bodyPartsPosition[wrongAnswer].position[3])
      }
-    context.font = "15px Arial"
-    context.fillText('Tentativas Restantes: '+ playerState.tentatives, 155, 480)
+    console.log(playerState.ended)
+    if(game.state.end){
+      //checa se o player é o vencedor
+      if(playerState.winner ===playerId){
+        console.log('ganhou')
+        context.fillText('GANHOUUUUUU', 200, 200)
 
-    requestAnimationFrame(() =>{
-       renderScreen(screen,playerState,Images,requestAnimationFrame)
-     })
+      }
+      if(playerState.loser === playerId){
+        console.log('perdeu')
+        context.fillText('PERDEUUUUU', 200, 200)
+      }
+    }
+    context.font = "15px Arial"
+    context.fillText('Tentativas Restantes: '+ tentatives, 155, 480)
+
     }

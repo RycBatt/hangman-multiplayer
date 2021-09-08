@@ -12,31 +12,56 @@ app.use(express.static('public'))
 const word = 'LOLLIPOP'
 
 const game = createGame(word)
-game.addPlayer({ playerId: '4Ffoo9KnBczy8ibyAAABç', host: false} )
-game.addPlayer({ playerId: 'SERTFYGHTRC4VGHBVYCT', host: true} )
 
-game.setState({wordLength: word.length})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'O'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'l'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
-game.playerGuess({playerId : '4Ffoo9KnBczy8ibyAAABç', guess : 'A'})
-
-
-console.log(game.state)
+game.subscribe((command)=>{
+  console.log(`Emitting ${command.type}`)
+  sockets.emit(command.type, command)
+})
 
 sockets.on('connection', (socket)=>{
+
   const playerId = socket.id
   console.log(`>>> Player connected on Server with id ${playerId}`)
-  game.addPlayer({playerId : playerId, host: true})
-  console.log(game.state.players[playerId])
-  socket.emit('setup', game.state.players[playerId])
+
+
+  console.log(`current players ${Object.keys(game.state.players).length}`)
+
+  if (Object.keys(game.state.players).length === 1){
+    game.addPlayer({playerId : playerId, host: false})
+    sockets.emit('setup', game.state.players[playerId])
+  }else{
+    game.addPlayer({playerId : playerId, host: true})
+  }
+
+  socket.on('teste', (msg)=>{
+    console.log(msg)
+    socket.emit('teste2', 'mensagemaleatoria')
+  })
+
+  socket.on('player-guess', (msg) =>{
+    console.log('entrou em palyer-guess')
+    game.playerGuess(msg)
+    if(game.state.ended){
+      socket.emit('game-ended', (game.state.players[playerId]))
+    }
+    socket.emit('guess-response', (game.state.players[playerId]))
+  })
+
+  socket.on('did-game-ended', ()=>{
+    if(game.state.ended){
+      socket.emit('game-ended', 'yes')
+    }else{
+      console.log('no')
+    }
+  })
+  
+  socket.on('disconnect', () => {
+    game.removePlayer({playerId : playerId})
+    console.log(`>>> Player ${playerId} disconnected from server`)
+  })
 })
+
+
 
 server.listen(3000, () =>{
   console.log('Server listening on port 3000')

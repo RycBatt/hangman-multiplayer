@@ -16,15 +16,17 @@
   <button id="guessbtn">Lança o click</button>
   <script src="/socket.io/socket.io.js"></script>
   <script type="module">
-  
+    
+    const socket = io()
+
     import createKeyboardListener from './keyboard-listener.js'
     import createGame from './game.js'
     import renderScreen from './renderscreen.js'
     import loadImages from './loadImages.js'
 
-
     const game = createGame()
-    const keyboardListener = createKeyboardListener(document)
+    var playerId = ''
+    const keyboardListener = createKeyboardListener(document, socket)
     const screen = document.getElementById("screen")
     const Images = new loadImages(
     [{
@@ -46,27 +48,65 @@
     name: 5,
     url: "pernaE.png"
     }]);    
+    console.log('entrou')
 
-    console.log(game)
-    
-    renderScreen(screen, game.state.players[playerId], Images, requestAnimationFrame)
 
-    const socket = io()
 
     socket.on('connect', () =>{
-      const playerId = socket.id
+      
+      playerId = socket.id
       console.log(`Player connected on Client with id ${playerId}`)
-
     })
-
+  
     socket.on('setup', (state) =>{
 
         console.log('>Receiving setup event from server')
-        game.state.players[playerId] = state
+        game.setState(state)
         console.log(state)
 
+        keyboardListener.registerPlayerId(playerId)
+        keyboardListener.subscribe((command)=>{
+          socket.emit('player-guess', command)
+        })
+        renderScreen(screen,game, Images, playerId)
     })
     
+    socket.on('add-player', (command) =>{
+      console.log(`Receiving ${command.type} ->${command.playerId}`)
+    })
+
+    socket.on('remove-player', (command) => {
+      console.log(`Disconected ${command.type} ->${command.playerId}`)
+    })
+
+    socket.on('player-guess', (command) => {
+      console.log(`Disconected ${command.type} ->${command.playerId}`)
+
+      const playerId = socket.id
+
+      if (playerId !== command.playerId){
+        game.playerGuess(command)
+      }
+      socket.emit('did-game-ended', 'herou')
+
+    })
+    socket.on('guess-response', (state)=>{
+      console.log(`Guess response received, new state:`)
+      game.setState(state)
+      console.log(game.state)
+      renderScreen(screen,game, Images, playerId)
+      socket.emit('did-game-ended', 'herou')
+    })
+
+    socket.on('game-ended', (state) => {
+      if (state == 'yes'){
+        game.setState(state)
+      }else{
+        game.setState(state)
+      }
+      renderScreen(screen, game, Images, playerId)
+    })
+
 
     
   </script>

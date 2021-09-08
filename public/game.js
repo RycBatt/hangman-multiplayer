@@ -1,13 +1,35 @@
 export default function createGame(word) {
   const pointsRef  = 10
   const state = {
+     ended: false,
      players : {},
-     stopped : false
+     wordLength : 0,
+     correctAnswerList : [],
+     wrongAnswerList : [],
+     points : [],
+     tentatives : []
   }
 
-  function end(endCommand){
-    setState (endCommand)
+  function end(loserId, winnerId, endCommand){
+    console.log(endCommand)
+
+    setPlayerState(loserId, endCommand)
+    setPlayerState(winnerId, endCommand)
+    setState(endCommand)
   }
+
+  const observers = []
+
+  function subscribe(observerFunction){
+    observers.push(observerFunction)
+  }
+
+  function notifyAll(command){
+    for(const observerFunction of observers){
+      observerFunction(command)
+    }
+  }
+
 
   function setState(newState){
     console.log('Received new game state: ')
@@ -26,13 +48,23 @@ export default function createGame(word) {
 
 
   function playerLose(playerId){
+    console.log(playerId + 'PERDEU TUDO O DRAMA...')
     const winnerId = getOpponentId(playerId)
     console.log(winnerId)
-    var command = {winner : winnerId,
+    var command = {ended : true, winner : winnerId,
     loser: playerId}
 
-    end(command)
+    end(playerId, winnerId, command)
 
+  }
+
+  function playerWin(playerId){
+    const loserId = getOpponentId(playerId)
+    console.log(loserId)
+    var command = {ended: true, winner : playerId,
+    loser: loserId}
+
+    end(loserId, playerId, command)
   }
 
   function setPlayerState(playerId, newState){
@@ -62,7 +94,22 @@ export default function createGame(word) {
       setState({player2 : playerId})
     }
 
+    notifyAll({
+      type:'add-player',
+      playerId: playerId
+    })
+
     console.log(`Added new player as ${playerIsHost ? 'host' : 'guest'} with id ${playerId} with ${state.players[playerId].points} points and ${state.players[playerId].tentatives} tentatives`)
+  }
+
+  function removePlayer(command){
+    const playerId = command.playerId
+    delete state.players[playerId] 
+
+    notifyAll({
+      type:'remove-player',
+      playerId: playerId,
+    })
   }
   
   function sendGuess(){
@@ -73,10 +120,11 @@ export default function createGame(word) {
       playerId: currentPlayers,
       guess: guess
     }
-    playerGuess(command)
   }
 
   function playerGuess(command) {
+    
+
     const playerId = command.playerId
     var playerGuess = command.guess
     word = word.toString().toUpperCase()
@@ -90,8 +138,7 @@ export default function createGame(word) {
     const currPlayerWrongList = state.players[playerId].wrongAnswerList
     // auxiliar variable to set final state of the player
     var newPlayerState  = {}
-
-    console.log(`Player with id ${playerId} is guessing the letter ${playerGuess}`)
+    console.log(`Player with id ${playerId} is guessing the letter ${playerGuess} TENTATIVES ${currPlayerTentatives}`)
 
     if (word.indexOf(playerGuess) < 0) {
       // Incorrect guess, increase our mistakes by one
@@ -107,11 +154,30 @@ export default function createGame(word) {
     else if (word.indexOf(playerGuess) >= 0) {
       // correct guess
       var newPlayerCorrectAnswerList = currPlayerCorrectList
-      newPlayerCorrectAnswerList.push([playerGuess,returnIndexes(word, playerGuess)])
+      newPlayerCorrectAnswerList.push({letter: playerGuess, positions: returnIndexes(word, playerGuess)})
       
       newPlayerState = {correctAnswerList : newPlayerCorrectAnswerList,
         points : currPlayerPoints + pointsRef
       }
+      var count = 0
+      for (const [key, value] of Object.entries(newPlayerCorrectAnswerList)) {
+        for (const letter in value.letter){
+          for(var i=0; i<word.length;i++) {
+            var aux = 0
+            if (word[i] === value.letter && aux === 0) {
+              count ++
+              aux = 1
+            }
+          }
+        }
+
+        }
+        console.log(count)
+        if (count === word.length){
+          console.log(playerId + 'WON!!!')
+          playerWin(playerId)
+      }
+      
     }
     setPlayerState(playerId, newPlayerState)
     }
@@ -134,6 +200,8 @@ return {
     setState,
     setPlayerState,
     playerLose,
+    removePlayer,
+    subscribe,
     end
   }
 }
