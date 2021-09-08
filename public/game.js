@@ -75,7 +75,7 @@ export default function createGame(word) {
 
   function addPlayer(command){
     const playerId = command.playerId
-    const playerTentatives = 'tentatives' in command ? command.tentatives : 6
+    const playerTentatives = 'tentatives' in command ? command.tentatives : 5
     const playerPoints = 'points' in command ? command.points : 100
     const playerIsHost = 'host' in command ? command.host : false
 
@@ -130,6 +130,12 @@ export default function createGame(word) {
     word = word.toString().toUpperCase()
     playerGuess = playerGuess.toString() 
     playerGuess = playerGuess.charAt(0).toUpperCase()
+
+    if (state.ended)
+    {
+      console.log('cabo o joguim')
+      return
+    }
 
     //get current values of player
     const currPlayerPoints = state.players[playerId].points

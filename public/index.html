@@ -20,7 +20,7 @@
     const socket = io()
 
     import createKeyboardListener from './keyboard-listener.js'
-    import createGame from './game.js'
+    import createGame from './gameClient.js'
     import renderScreen from './renderscreen.js'
     import loadImages from './loadImages.js'
 
@@ -84,9 +84,6 @@
 
       const playerId = socket.id
 
-      if (playerId !== command.playerId){
-        game.playerGuess(command)
-      }
       socket.emit('did-game-ended', 'herou')
 
     })
