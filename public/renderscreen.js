@@ -61,6 +61,12 @@ export default function renderScreen(screen, game, Images, playerId){
       if(tentatives > 0){
         context.drawImage(Images.get(wrongAnswer), bodyPartsPosition[wrongAnswer].position[0], bodyPartsPosition[wrongAnswer].position[1], bodyPartsPosition[wrongAnswer].position[2], bodyPartsPosition[wrongAnswer].position[3])
       }else{
+        context.drawImage(Images.get(0), bodyPartsPosition[0].position[0], bodyPartsPosition[0].position[1], bodyPartsPosition[0].position[2], bodyPartsPosition[0].position[3])
+        context.drawImage(Images.get(1), bodyPartsPosition[1].position[0], bodyPartsPosition[1].position[1], bodyPartsPosition[1].position[2], bodyPartsPosition[1].position[3])
+        context.drawImage(Images.get(2), bodyPartsPosition[2].position[0], bodyPartsPosition[2].position[1], bodyPartsPosition[2].position[2], bodyPartsPosition[2].position[3])
+        context.drawImage(Images.get(3), bodyPartsPosition[3].position[0], bodyPartsPosition[3].position[1], bodyPartsPosition[3].position[2], bodyPartsPosition[3].position[3])
+        context.drawImage(Images.get(4), bodyPartsPosition[4].position[0], bodyPartsPosition[4].position[1], bodyPartsPosition[4].position[2], bodyPartsPosition[4].position[3])
+        context.drawImage(Images.get(5), bodyPartsPosition[5].position[0], bodyPartsPosition[5].position[1], bodyPartsPosition[5].position[2], bodyPartsPosition[5].position[3])
         console.log('cant log more')
       }
      }

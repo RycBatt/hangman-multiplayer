@@ -75,7 +75,7 @@ export default function createGame(word) {
 
   function addPlayer(command){
     const playerId = command.playerId
-    const playerTentatives = 'tentatives' in command ? command.tentatives : 5
+    const playerTentatives = 'tentatives' in command ? command.tentatives : 7
     const playerPoints = 'points' in command ? command.points : 100
     const playerIsHost = 'host' in command ? command.host : false
 
@@ -134,6 +134,12 @@ export default function createGame(word) {
     if (state.ended)
     {
       console.log('cabo o joguim')
+      return
+    } 
+    if(playerId in state.players){
+      console.log('de boa')
+    }else{
+      console.log('cant find player in state')
       return
     }
 
